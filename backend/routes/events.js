@@ -16,6 +16,52 @@ const router = express.Router();
 // Apply auth middleware to protect event routes
 router.use(authMiddleware);
 
+function validateData(data) {
+  const errors = [];
+
+  if (!data.title?.trim()) errors.push("title is required");
+  if (!data.timeStart) errors.push("timeStart is required");
+  if (!data.timeEnd) errors.push("timeEnd is required");
+  if (!data.day) errors.push("day is required");
+
+  const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
+  if (data.timeStart && !timeRegex.test(data.timeStart))
+    errors.push("timeStart must be HH:MM format");
+  if (data.timeEnd && !timeRegex.test(data.timeEnd))
+    errors.push("timeEnd must be HH:MM format");
+
+  const startTime = dayjs(data.timeStart, "HH:mm");
+  const endTime = dayjs(data.timeEnd, "HH:mm");
+
+  if (endTime.isBefore(startTime))
+    errors.push("End time must be after start time");
+
+  if (data.day) {
+    const dayToValidate =
+      typeof data.day === "number"
+        ? dayjs(data.day).format("YYYY-MM-DD")
+        : data.day;
+    if (!dayjs(dayToValidate, "YYYY-MM-DD", true).isValid())
+      errors.push("day must be valid date");
+  }
+
+  const validCategories = [
+    "Other",
+    "Work",
+    "Education",
+    "Health & Wellness",
+    "Finance & Bills",
+    "Social & Family",
+    "Travel & Commute",
+    "Personal Tasks",
+    "Leisure & Hobbies",
+  ];
+  if (data.category && !validCategories.includes(data.category))
+    errors.push(`category must be one of: ${validCategories.join(", ")}`);
+
+  return errors;
+}
+
 // Get all events for the authenticated user
 router.get("/", async (req, res) => {
   try {
@@ -31,6 +77,8 @@ router.get("/", async (req, res) => {
 
 // Create a new event (attach userId)
 router.post("/", async (req, res) => {
+  const errors = validateData(req.body);
+  if (errors.length > 0) return res.status(400).json({ errors });
   try {
     const newEvent = {
       ...req.body,
@@ -46,6 +94,8 @@ router.post("/", async (req, res) => {
 
 // Update routes to check ownership
 router.put("/:id", async (req, res) => {
+  const errors = validateData(req.body);
+  if (errors.length > 0) return res.status(400).json({ errors });
   try {
     const event = await Event.findOne({
       where: {
