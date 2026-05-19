@@ -114,6 +114,13 @@ CalendarIQ is a comprehensive web application built as a university thesis proje
    JWT_SECRET=your_jwt_secret_here
    GROQ_API_KEY=your_groq_api_key
    GEMINI_API_KEY=your_gemini_api_key
+
+   # Database Configuration (MySQL)
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_USER=root
+   DB_PASSWORD=
+   DB_NAME=calendariq
    ```
 
 5. **Start the application**
@@ -150,19 +157,16 @@ CalendarIQ is a comprehensive web application built as a university thesis proje
 The AI assistant understands natural language commands such as:
 
 - **Creating Events**:
-
   - "Schedule a meeting tomorrow at 2 PM"
   - "Add gym session on Friday morning"
   - "Put dentist appointment next week"
 
 - **Finding Events**:
-
   - "When is my next meeting?"
   - "When was my last doctor appointment?"
   - "Find my workout sessions this week"
 
 - **Time Suggestions**:
-
   - "When should I schedule a team meeting?"
   - "Find the best time for a dentist visit"
   - "Suggest time slots for studying"

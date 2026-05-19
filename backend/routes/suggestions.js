@@ -5,6 +5,7 @@ import dayjs from "dayjs";
 import Event from "../models/Event.js";
 import { Op } from "sequelize";
 import { authMiddleware } from "../middleware/auth.js";
+import model from "../config/models.js";
 
 dotenv.config();
 const router = express.Router();
@@ -26,7 +27,7 @@ router.post("/smart-suggestions", async (req, res) => {
     const pastMonthEvents = pastEvents.filter(
       (event) =>
         dayjs(event.day).isAfter(twoMonthsAgo) ||
-        dayjs(event.day).isSame(twoMonthsAgo)
+        dayjs(event.day).isSame(twoMonthsAgo),
     );
 
     // 1. CREATE_EVENT suggestions
@@ -56,7 +57,7 @@ function createEventSuggestions(
   suggestions,
   pastMonthEvents,
   futureEvents,
-  today
+  today,
 ) {
   // Group past events by category to find common event types
   const eventsByCategory = {};
@@ -98,7 +99,7 @@ function createEventSuggestions(
     });
 
     const mostCommonDay = Object.entries(dayOfWeekCounts).sort(
-      (a, b) => b[1] - a[1]
+      (a, b) => b[1] - a[1],
     )[0]?.[0];
 
     // Find next occurrence of this day
@@ -111,7 +112,7 @@ function createEventSuggestions(
     suggestions.push({
       type: "CREATE_EVENT",
       suggestion: `Schedule a ${mostCommonTitle} on ${nextDay.format(
-        "dddd"
+        "dddd",
       )} ${nextDay.format("MMM D")}`,
     });
   });
@@ -121,14 +122,14 @@ function findEventSuggestions(
   suggestions,
   pastMonthEvents,
   futureEvents,
-  today
+  today,
 ) {
   // Filter future events to get only those within the next month
   const oneMonthFromNow = today.add(1, "month");
   const nextMonthEvents = futureEvents.filter(
     (event) =>
       dayjs(event.day).isBefore(oneMonthFromNow) ||
-      dayjs(event.day).isSame(oneMonthFromNow)
+      dayjs(event.day).isSame(oneMonthFromNow),
   );
 
   // Combine past and future events for title analysis
@@ -142,7 +143,7 @@ function findEventSuggestions(
     const shuffledTitles = uniqueTitles.sort(() => 0.5 - Math.random());
     const selectedTitles = shuffledTitles.slice(
       0,
-      Math.min(2, uniqueTitles.length)
+      Math.min(2, uniqueTitles.length),
     );
 
     selectedTitles.forEach((title) => {
@@ -166,7 +167,7 @@ function findEventSuggestions(
 function localEventSuggestions(suggestions, pastMonthEvents, today) {
   // Find "Social & Family" events
   const socialEvents = pastMonthEvents.filter(
-    (event) => event.category === "Social & Family"
+    (event) => event.category === "Social & Family",
   );
 
   // If we have social events, find common days of week
@@ -253,7 +254,7 @@ function timeEventSuggestions(suggestions, pastMonthEvents, today) {
     const shuffledOptions = dayOptions.sort(() => 0.5 - Math.random());
     const selectedOptions = shuffledOptions.slice(
       0,
-      Math.min(2, dayOptions.length)
+      Math.min(2, dayOptions.length),
     );
 
     selectedOptions.forEach((option) => {
@@ -289,7 +290,7 @@ function diversifyAndLimitSuggestions(suggestions) {
       // Add 1-2 suggestions of this type depending on availability
       const numToAdd = Math.min(
         1 + Math.floor(Math.random() * 2), // 1 or 2
-        typeOptions.length
+        typeOptions.length,
       );
 
       // Shuffle the options to get random ones
@@ -306,7 +307,7 @@ function diversifyAndLimitSuggestions(suggestions) {
   if (result.length < 3) {
     // Get all suggestions that aren't already in result
     const remainingSuggestions = suggestions.filter(
-      (s) => !result.some((r) => r.suggestion === s.suggestion)
+      (s) => !result.some((r) => r.suggestion === s.suggestion),
     );
 
     // Shuffle and add them until we reach at least 3
@@ -386,7 +387,7 @@ router.post("/ai-suggestions", async (req, res) => {
     const prompt = `Based on the user's past events, suggest 3-5 relevant event titles, categories, and locations for a new event.
 
 Selected time slot: ${timeStart} - ${timeEnd} on ${selectedDay.format(
-      "dddd, MMMM D"
+      "dddd, MMMM D",
     )}
 
 Past events from the last 2 months that occurred during the time slot ${timeStart} - ${timeEnd}:
@@ -415,7 +416,7 @@ Limit to 5 suggestions maximum, ordered by relevance/confidence. Keep reasons co
 
     const response = await groq.chat.completions.create({
       messages: [{ role: "user", content: prompt }],
-      model: "llama3-70b-8192",
+      model: model,
       temperature: 0.3,
     });
 

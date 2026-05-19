@@ -6,9 +6,12 @@ import Event from "../models/Event.js";
 import { Op } from "sequelize";
 import axios from "axios";
 import { jsonrepair } from "jsonrepair";
+import model from "../config/models.js";
+import { authMiddleware } from "../middleware/auth.js";
 
 dotenv.config();
 const router = express.Router();
+router.use(authMiddleware);
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
@@ -34,7 +37,7 @@ function addMessageToHistory(userId, role, content) {
   if (history.length > MAX_HISTORY) {
     conversationHistory.set(
       userId,
-      history.slice(history.length - MAX_HISTORY)
+      history.slice(history.length - MAX_HISTORY),
     );
   }
 }
@@ -82,8 +85,9 @@ router.post("/", async (req, res) => {
     text,
     workingHoursStart = "08:00",
     workingHoursEnd = "20:00",
-    userId,
   } = req.body;
+
+  const userId = req.user.userId;
 
   // Get user's conversation history
   const history = getUserConversation(userId);
@@ -190,13 +194,13 @@ router.post("/", async (req, res) => {
   try {
     const response = await groq.chat.completions.create({
       messages: messages,
-      model: "llama3-70b-8192",
+      model: "llama-3.1-8b-instant",
       // response_format: { type: "json_object" },
       temperature: 0.1,
     });
 
     const assistantResponse = safeJsonParse(
-      response.choices[0].message.content
+      response.choices[0].message.content,
     );
 
     // Create params array from direct properties if parameters doesn't exist
@@ -230,7 +234,7 @@ router.post("/", async (req, res) => {
           dayValue,
           timeStart,
           timeEnd,
-          userId
+          userId,
         );
 
         if (overlappingEvents.length > 0) {
@@ -258,7 +262,7 @@ router.post("/", async (req, res) => {
             },
             overlappingEvents: formattedOverlappingEvents,
             message: `I can't create "${title}" on ${dayjs(date).format(
-              "dddd, MMMM D"
+              "dddd, MMMM D",
             )} from ${timeStart} to ${timeEnd} because it would overlap with:`,
           };
 
@@ -269,7 +273,7 @@ router.post("/", async (req, res) => {
             JSON.stringify({
               function: "create_event",
               message: finalResponse.message,
-            })
+            }),
           );
 
           return res.json(finalResponse);
@@ -298,7 +302,7 @@ router.post("/", async (req, res) => {
             JSON.stringify({
               function: "create_event",
               message: responseMessage,
-            })
+            }),
           );
 
           return res.json(finalResponse);
@@ -330,7 +334,7 @@ router.post("/", async (req, res) => {
             JSON.stringify({
               function: "suggest_time",
               message: responseMessage,
-            })
+            }),
           );
 
           return res.json(finalResponse);
@@ -353,7 +357,7 @@ router.post("/", async (req, res) => {
             JSON.stringify({
               function: "suggest_time",
               message: responseMessage,
-            })
+            }),
           );
 
           return res.json(finalResponse);
@@ -368,20 +372,20 @@ router.post("/", async (req, res) => {
           dayValue,
           workingHoursStart,
           workingHoursEnd,
-          userId
+          userId,
         );
 
         // Get category patterns to find optimal slots
         const categoryPatterns = await getCategoryPatterns(
           eventCategory,
-          userId
+          userId,
         );
 
         // Find the average duration for this category (minimum 30 minutes)
         const avgDuration = categoryPatterns
           ? Math.max(
               Math.ceil(categoryPatterns.averageDurationMinutes / 30) * 30,
-              30
+              30,
             )
           : 60;
 
@@ -391,12 +395,12 @@ router.post("/", async (req, res) => {
           eventCategory,
           dayOfWeek,
           avgDuration,
-          categoryPatterns
+          categoryPatterns,
         );
 
         // Message for time suggestions
         responseMessage = `Here are the best times to schedule "${title}" on ${dayjs(
-          date
+          date,
         ).format("YYYY-MM-DD")} based on your patterns.`;
 
         finalResponse = {
@@ -424,7 +428,7 @@ router.post("/", async (req, res) => {
           JSON.stringify({
             function: "suggest_time",
             message: responseMessage,
-          })
+          }),
         );
 
         return res.json(finalResponse);
@@ -444,7 +448,7 @@ router.post("/", async (req, res) => {
           JSON.stringify({
             function: "suggest_time",
             message: responseMessage,
-          })
+          }),
         );
 
         return res.json(finalResponse);
@@ -474,7 +478,7 @@ router.post("/", async (req, res) => {
             JSON.stringify({
               function: "delete_event",
               message: responseMessage,
-            })
+            }),
           );
 
           return res.json(finalResponse);
@@ -508,7 +512,7 @@ router.post("/", async (req, res) => {
               JSON.stringify({
                 function: "delete_event",
                 message: responseMessage,
-              })
+              }),
             );
 
             return res.json(finalResponse);
@@ -550,13 +554,13 @@ If you cannot find a matching event, use null for eventId and explain why in the
           // Call Groq to find the event to delete
           const groqResponse = await groq.chat.completions.create({
             messages: [{ role: "user", content: deletePrompt }],
-            model: "llama3-70b-8192",
+            model: "llama-3.1-8b-instant",
             response_format: { type: "json_object" },
             temperature: 0,
           });
 
           const matchResult = JSON.parse(
-            groqResponse.choices[0].message.content
+            groqResponse.choices[0].message.content,
           );
 
           if (!matchResult.eventId) {
@@ -571,7 +575,7 @@ If you cannot find a matching event, use null for eventId and explain why in the
 
           // Find the selected event
           const selectedEvent = formattedEvents.find(
-            (e) => e.id.toString() === matchResult.eventId.toString()
+            (e) => e.id.toString() === matchResult.eventId.toString(),
           );
 
           if (!selectedEvent) {
@@ -600,7 +604,7 @@ If you cannot find a matching event, use null for eventId and explain why in the
             JSON.stringify({
               function: "delete_event",
               message: responseMessage,
-            })
+            }),
           );
 
           return res.json(finalResponse);
@@ -641,7 +645,7 @@ If you cannot find a matching event, use null for eventId and explain why in the
           JSON.stringify({
             function: "local_events",
             message: responseMessage,
-          })
+          }),
         );
 
         return res.json(finalResponse);
@@ -663,7 +667,7 @@ If you cannot find a matching event, use null for eventId and explain why in the
         const matchingEvents = await findEventsByCategory(
           category,
           timeframe,
-          userId
+          userId,
         );
 
         if (matchingEvents.length === 0) {
@@ -672,8 +676,8 @@ If you cannot find a matching event, use null for eventId and explain why in the
             timeframe === "future"
               ? "coming up"
               : timeframe === "past"
-              ? "in the past"
-              : ""
+                ? "in the past"
+                : ""
           }.`;
 
           finalResponse = {
@@ -690,7 +694,7 @@ If you cannot find a matching event, use null for eventId and explain why in the
             JSON.stringify({
               function: "find_event",
               message: responseMessage,
-            })
+            }),
           );
 
           return res.json(finalResponse);
@@ -750,7 +754,7 @@ Your response must be a JSON that follows this exact format:
         // Call Groq to find the most relevant event
         const groqResponse = await groq.chat.completions.create({
           messages: [{ role: "user", content: matchPrompt }],
-          model: "llama3-70b-8192",
+          model: model,
           response_format: { type: "json_object" },
           temperature: 0,
         });
@@ -771,7 +775,7 @@ Your response must be a JSON that follows this exact format:
 
         // Find the selected event
         const selectedEvent = formattedEvents.find(
-          (e) => e.id.toString() === matchResult.eventId.toString()
+          (e) => e.id.toString() === matchResult.eventId.toString(),
         );
 
         // Use the dynamically generated message from the AI
@@ -793,7 +797,7 @@ Your response must be a JSON that follows this exact format:
           JSON.stringify({
             function: "find_event",
             message: responseMessage,
-          })
+          }),
         );
 
         return res.json(finalResponse);
@@ -819,7 +823,7 @@ Your response must be a JSON that follows this exact format:
       JSON.stringify({
         function: "unknown",
         message: finalResponse.message,
-      })
+      }),
     );
 
     res.json(finalResponse);
@@ -846,7 +850,7 @@ Your response must be a JSON that follows this exact format:
 
 // Add this new endpoint after the existing route
 router.post("/reset", (req, res) => {
-  const { userId } = req.body;
+  const userId = req.user.userId;
 
   if (!userId) {
     return res.status(400).json({ error: "User ID is required" });
@@ -899,7 +903,7 @@ async function findFreeSlotsForDay(
   day,
   workingHoursStart = "08:00",
   workingHoursEnd = "20:00",
-  userId
+  userId,
 ) {
   try {
     // Get all events for the day FOR THE CURRENT USER
@@ -1029,7 +1033,7 @@ function rankSlotsByPattern(
   category,
   dayOfWeek,
   duration,
-  patterns
+  patterns,
 ) {
   if (!patterns) {
     // Without patterns, just return slots sorted by start time
@@ -1039,14 +1043,14 @@ function rankSlotsByPattern(
         return {
           timeStart: slot.timeStart,
           timeEnd: minutesToTimeString(
-            getTimeInMinutes(slot.timeStart) + duration
+            getTimeInMinutes(slot.timeStart) + duration,
           ),
           score: 1,
           durationMinutes: duration,
         };
       })
       .sort(
-        (a, b) => getTimeInMinutes(a.timeStart) - getTimeInMinutes(b.timeStart)
+        (a, b) => getTimeInMinutes(a.timeStart) - getTimeInMinutes(b.timeStart),
       );
   }
 
@@ -1122,8 +1126,8 @@ async function getLocalEvents(city, timeframe) {
     // Pass timeframe as a query parameter to the local-events endpoint
     const response = await axios.get(
       `http://localhost:5000/api/local-events/${encodeURIComponent(
-        city
-      )}?timeframe=${encodeURIComponent(timeframe)}`
+        city,
+      )}?timeframe=${encodeURIComponent(timeframe)}`,
     );
     return response.data;
   } catch (error) {

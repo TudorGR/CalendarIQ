@@ -2,6 +2,7 @@ import express from "express";
 import axios from "axios";
 import dotenv from "dotenv";
 import { Groq } from "groq-sdk";
+import model from "../config/models.js";
 
 dotenv.config();
 const router = express.Router();
@@ -15,7 +16,7 @@ const groq = new Groq({
 async function getGroqJsonResponse(prompt) {
   const groqResponse = await groq.chat.completions.create({
     messages: [{ role: "user", content: prompt }],
-    model: "llama3-70b-8192",
+    model: model,
     temperature: 0.1, // Low temperature for more predictable responses
   });
 
@@ -82,7 +83,7 @@ router.get("/weather", async (req, res) => {
 
     // Forward the request to Open Meteo without auth headers
     const response = await axios.get(
-      `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&hourly=temperature_2m,precipitation,weathercode&forecast_days=1`
+      `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&hourly=temperature_2m,precipitation,weathercode&forecast_days=1`,
     );
 
     // Return the data to the client
