@@ -11,6 +11,8 @@ const Register = () => {
   });
   const [formError, setFormError] = useState("");
   const { register, error } = useContext(AuthContext);
+  const [showSpinner, setShowSpinner] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
 
   const { name, email, password, confirmPassword } = formData;
@@ -21,10 +23,14 @@ const Register = () => {
 
   const onSubmit = async (e) => {
     e.preventDefault();
+    setShowSpinner(true);
+    setSubmitting(true);
     setFormError("");
 
     if (password !== confirmPassword) {
       setFormError("Passwords do not match");
+      setShowSpinner(false);
+      setSubmitting(false);
       return;
     }
 
@@ -33,6 +39,9 @@ const Register = () => {
       navigate("/");
     } catch (err) {
       setFormError(err.response?.data?.message || "Registration failed");
+    } finally {
+      setSubmitting(false);
+      setShowSpinner(false);
     }
   };
 
@@ -55,6 +64,7 @@ const Register = () => {
             id="name"
             type="text"
             name="name"
+            disabled={submitting}
             placeholder="Name"
             value={name}
             onChange={onChange}
@@ -64,6 +74,7 @@ const Register = () => {
             className="border-b-1 border-gray-200  px-4 h-12 outline-0 w-full appearance-none  text-gray-700 leading-tight focus:outline-none"
             id="email"
             type="email"
+            disabled={submitting}
             name="email"
             placeholder="Email Address"
             value={email}
@@ -75,6 +86,7 @@ const Register = () => {
             id="password"
             type="password"
             name="password"
+            disabled={submitting}
             value={password}
             placeholder="Password"
             onChange={onChange}
@@ -86,6 +98,7 @@ const Register = () => {
             id="confirmPassword"
             type="password"
             name="confirmPassword"
+            disabled={submitting}
             value={confirmPassword}
             placeholder="Confirm Password"
             onChange={onChange}
@@ -95,15 +108,19 @@ const Register = () => {
           <div className="flex justify-end items-center h-14">
             <Link
               to="/login"
-              className="transition-all flex items-center active:bg-gray-50 cursor-pointer border px-4 h-10 shadow-custom border-gray-200 rounded-full mr-2"
+              className={`${submitting && "pointer-events-none "} transition-all flex items-center active:bg-gray-50 cursor-pointer border px-4 h-10 shadow-custom border-gray-200 rounded-full mr-2`}
             >
-              <p>Log in</p>
+              <p className={`${submitting && "text-gray-200"}`}>Log in</p>
             </Link>
             <button
               type="submit"
-              className="transition-all  flex items-center justify-center active:bg-gray-700 shadow-custom text-white bg-black cursor-pointer px-4 h-10  rounded-full mr-2"
+              className={`transition-all ${showSpinner ? "w-12" : "w-22"} text-nowrap flex items-center justify-center active:bg-gray-700 shadow-custom text-white bg-black cursor-pointer px-4 h-10  rounded-full mr-2`}
             >
-              Sign up
+              {showSpinner ? (
+                <span className="spinner-loader2"></span>
+              ) : (
+                "Sign Up"
+              )}
             </button>
           </div>
         </form>

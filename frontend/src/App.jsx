@@ -25,10 +25,10 @@ const CalendarApp = () => {
 
   // Initialize state from localStorage or default to true
   const [showAIChatBox, setShowAIChatBox] = useState(
-    localStorage.getItem("showAIChatBox") !== "false"
+    localStorage.getItem("showAIChatBox") !== "false",
   );
   const [showSidebar, setShowSidebar] = useState(
-    localStorage.getItem("showSidebar") !== "false"
+    localStorage.getItem("showSidebar") !== "false",
   );
 
   const {

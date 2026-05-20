@@ -9,6 +9,8 @@ const Login = () => {
   });
   const [formError, setFormError] = useState("");
   const { login, error } = useContext(AuthContext);
+  const [showSpinner, setShowSpinner] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
 
   const { email, password } = formData;
@@ -19,6 +21,8 @@ const Login = () => {
 
   const onSubmit = async (e) => {
     e.preventDefault();
+    setShowSpinner(true);
+    setSubmitting(true);
     setFormError("");
 
     try {
@@ -26,6 +30,9 @@ const Login = () => {
       navigate("/");
     } catch (err) {
       setFormError(err.response?.data?.message || "Login failed");
+    } finally {
+      setSubmitting(false);
+      setShowSpinner(false);
     }
   };
 
@@ -37,7 +44,7 @@ const Login = () => {
         </header>
 
         {(formError || error) && (
-          <div className=" bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          <div className=" bg-red-100  text-red-700 px-4 py-3">
             {formError || error}
           </div>
         )}
@@ -66,15 +73,19 @@ const Login = () => {
           <div className="flex justify-end items-center h-14">
             <Link
               to="/register"
-              className="transition-all flex items-center active:bg-gray-50 cursor-pointer border px-4 h-10 shadow-custom border-gray-200 rounded-full mr-2"
+              className={`${submitting && "pointer-events-none "}  transition-all flex items-center active:bg-gray-50 cursor-pointer border px-4 h-10 shadow-custom border-gray-200 rounded-full mr-2`}
             >
-              <p>Sign Up</p>
+              <p className={`${submitting && "text-gray-200"}`}>Sign Up</p>
             </Link>
             <button
               type="submit"
-              className="transition-all  flex items-center justify-center active:bg-gray-700 shadow-custom text-white bg-black cursor-pointer px-4 h-10  rounded-full mr-2"
+              className={`transition-all ${showSpinner ? "w-12" : "w-20"} text-nowrap flex items-center justify-center active:bg-gray-700 shadow-custom text-white bg-black cursor-pointer px-4 h-10  rounded-full mr-2`}
             >
-              Log in
+              {showSpinner ? (
+                <span className="spinner-loader2"></span>
+              ) : (
+                "Log in"
+              )}
             </button>
           </div>
         </form>

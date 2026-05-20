@@ -27,25 +27,38 @@ const AIChatBoxWrapper = ({ showAIChatBox, onClose }) => {
     };
   }, [showAIChatBox]);
 
-  if (!showAIChatBox) return null;
+  const [renderAIChatBox, setRenderAIChatBox] = useState(showAIChatBox);
+  const [closing, setClosing] = useState(true);
+
+  useEffect(() => {
+    if (showAIChatBox) {
+      setRenderAIChatBox(true);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => setClosing(false));
+      });
+      return;
+    }
+
+    setClosing(true);
+    const timer = setTimeout(() => setRenderAIChatBox(false), 300);
+    return () => clearTimeout(timer);
+  }, [showAIChatBox]);
+
+  if (!renderAIChatBox) return null;
 
   return (
     <div className="fixed inset-0 z-50 md:relative md:inset-auto md:z-auto">
-      {/* Overlay with animation - only visible on mobile */}
       <div
-        className="absolute inset-0 bg-black/10 bg-opacity-40 animate-fade-in transition-opacity duration-300 ease-in-out md:hidden"
+        className={`absolute inset-0 bg-black/10 bg-opacity-40 transition-opacity duration-300 ease-in-out md:hidden ${
+          closing ? "opacity-0" : "opacity-100"
+        }`}
         onClick={onClose}
       />
 
-      {/* Chat - conditionally add animation classes only for mobile */}
       <div
-        className={`absolute h-full inset-y-0 right-0 w-80 
-        ${
-          isMobile
-            ? "transform transition-transform duration-300 ease-in-out translate-x-0 animate-slide-in-right"
-            : ""
-        }
-        md:relative md:inset-auto`}
+        className={`absolute h-full inset-y-0 right-0 w-80 transform transition-transform duration-300 ease-in-out md:relative md:inset-auto ${
+          closing ? "translate-x-full" : "translate-x-0"
+        }`}
       >
         <AIChatBox onClose={onClose} />
       </div>

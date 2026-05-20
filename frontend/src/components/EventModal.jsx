@@ -55,12 +55,12 @@ export default function EventModal() {
   } = useContext(Context);
   const [title, setTitle] = useState(selectedEvent ? selectedEvent.title : "");
   const [description, setDescription] = useState(
-    selectedEvent ? selectedEvent.description : ""
+    selectedEvent ? selectedEvent.description : "",
   );
   const [startTime, setStartTime] = useState(timeStart ? timeStart : "08:00");
   const [endTime, setEndTime] = useState(timeEnd ? timeEnd : "09:00");
   const [location, setLocation] = useState(
-    selectedEvent ? selectedEvent.location : ""
+    selectedEvent ? selectedEvent.location : "",
   );
   const [error, setError] = useState(false);
   const inputRef = useRef(0);
@@ -71,24 +71,34 @@ export default function EventModal() {
   const [selectedDate, setSelectedDate] = useState(
     selectedDay
       ? selectedDay.format("YYYY-MM-DD")
-      : dayjs().format("YYYY-MM-DD")
+      : dayjs().format("YYYY-MM-DD"),
   );
   const [isVisible, setIsVisible] = useState(false);
   const [reminderEnabled, setReminderEnabled] = useState(
-    selectedEvent ? selectedEvent.reminderEnabled : false
+    selectedEvent ? selectedEvent.reminderEnabled : false,
   );
   const [reminderTime, setReminderTime] = useState(
-    selectedEvent ? selectedEvent.reminderTime : 15
+    selectedEvent ? selectedEvent.reminderTime : 15,
   );
   const [isReminderSelectOpen, setIsReminderSelectOpen] = useState(false);
   const [suggestionsLoading, setSuggestionsLoading] = useState(false);
+  const [showFormSpinner, setShowFormSpinner] = useState(false);
+  const [showDeleteSpinner, setShowDeleteSpinner] = useState(false);
 
   useEffect(() => {
     // Trigger enter animation on mount
     setIsVisible(true);
   }, []);
 
+  const handleDelete = async () => {
+    setShowDeleteSpinner(true);
+    await dispatchEvent({ type: "delete", payload: selectedEvent });
+    setShowDeleteSpinner(false);
+    setShowEventModal(false);
+  };
+
   const handleSubmit = async (e) => {
+    setShowFormSpinner(true);
     e.preventDefault();
 
     const getMinutes = (timeStr) => {
@@ -123,7 +133,7 @@ export default function EventModal() {
         description,
         timeStart: finalStartTime,
         timeEnd: finalEndTime,
-        category: selectedCategory || "Other", // Changed from "None" to "Other"
+        category: selectedCategory || "Other",
         location,
         reminderEnabled,
         reminderTime,
@@ -143,6 +153,7 @@ export default function EventModal() {
 
       setSelectedEvent(null);
       setShowEventModal(false);
+      setShowFormSpinner(false);
     } catch (error) {
       console.error("Failed to save event:", error);
       alert("Failed to save event. Please try again.");
@@ -198,7 +209,7 @@ export default function EventModal() {
         case "ArrowDown":
           e.preventDefault();
           setCurrentSuggestionIndex((prev) =>
-            prev < suggestions.length - 1 ? prev + 1 : prev
+            prev < suggestions.length - 1 ? prev + 1 : prev,
           );
           break;
         case "Tab":
@@ -242,7 +253,7 @@ export default function EventModal() {
               timeStart,
               timeEnd,
             }),
-          }
+          },
         );
 
         if (response.ok) {
@@ -312,8 +323,8 @@ export default function EventModal() {
           </h1>
           <div className="flex items-center">
             <button
-              onClick={() => setShowEventModal(false)}
-              className="cursor-pointer mr-4"
+              onClick={() => !showFormSpinner && setShowEventModal(false)}
+              className={`${showFormSpinner && "pointer-events-none"} cursor-pointer mr-4`}
               type="button"
             >
               <img src={closeIcon} className="w-5" />
@@ -458,7 +469,7 @@ export default function EventModal() {
                       <div className="h-full flex items-center">
                         {reminderEnabled
                           ? reminderOptions.find(
-                              (opt) => opt.value === reminderTime
+                              (opt) => opt.value === reminderTime,
                             )?.label
                           : "No reminder"}
                       </div>
@@ -522,21 +533,25 @@ export default function EventModal() {
           <div className="flex">
             {selectedEvent ? (
               <button
-                onClick={() => {
-                  setShowEventModal(false);
-                  dispatchEvent({ type: "delete", payload: selectedEvent });
-                }}
-                className="transition-all border-gray-200 rounded-full mr-2 shadow-custom active:bg-gray-50 border w-10 h-10 cursor-pointer"
+                onClick={!showFormSpinner && handleDelete}
+                className={`transition-all border-gray-200 rounded-full mr-2 shadow-custom active:bg-gray-50 border w-10 h-10 cursor-pointer ${showFormSpinner && "pointer-events-none"}`}
                 type="button"
               >
-                <img src={deleteIcon} className="w-4 mx-auto" />
+                {showDeleteSpinner ? (
+                  <span className="spinner-loader3"></span>
+                ) : (
+                  <img
+                    src={deleteIcon}
+                    className={`w-4 mx-auto ${showFormSpinner && "opacity-40"}`}
+                  />
+                )}
               </button>
             ) : (
               ""
             )}
             <button
-              onClick={() => setShowEventModal(false)}
-              className="transition-all  active:bg-gray-50 cursor-pointer border px-4 h-10 shadow-custom border-gray-200 rounded-full mr-2"
+              onClick={() => !showFormSpinner && setShowEventModal(false)}
+              className={`transition-all ${showFormSpinner && "text-gray-200 pointer-events-none"} active:bg-gray-50 cursor-pointer border px-4 h-10 shadow-custom border-gray-200 rounded-full mr-2`}
               type="button"
             >
               Cancel
@@ -544,10 +559,13 @@ export default function EventModal() {
             <button
               type="submit"
               onClick={handleSubmit}
-              className="transition-all  flex items-center justify-center active:bg-gray-700 shadow-custom text-white bg-black cursor-pointer px-4 h-10  rounded-full mr-2"
+              className={`transition-all ${showFormSpinner ? "w-12" : "w-20"} flex items-center justify-center active:bg-gray-700 shadow-custom text-white bg-black cursor-pointer px-4 h-10  rounded-full mr-2`}
             >
-              <img src={saveIcon} className="w-4 mr-2" />
-              <p>Save</p>
+              {showFormSpinner ? (
+                <span className="spinner-loader2"></span>
+              ) : (
+                <p>Save</p>
+              )}
             </button>
           </div>
         </footer>
