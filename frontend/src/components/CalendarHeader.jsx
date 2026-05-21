@@ -88,9 +88,8 @@ const CalendarHeader = ({
     if (isDayView) {
       return (
         <div className="flex flex-nowrap text-nowrap">
-          <h2 className="text-sm">{selectedDate.format("DD, MMMM")}</h2>
-          <h2 className="text-sm text-gray-400">
-            {selectedDate.format(", YYYY")}
+          <h2 className="text-sm">
+            {selectedDate.format("DD, MMMM")}, {selectedDate.format("YYYY")}
           </h2>
         </div>
       );
@@ -104,10 +103,8 @@ const CalendarHeader = ({
         return (
           <div className="flex flex-nowrap text-nowrap">
             <h2 className="text-sm">
-              {weekStart.format("MMMM")}-{weekEnd.format("MMMM")}
-            </h2>
-            <h2 className="text-sm text-gray-400">
-              , {weekStart.format("YYYY")}
+              {weekStart.format("MMMM")}-{weekEnd.format("MMMM")},{" "}
+              {weekStart.format("YYYY")}
             </h2>
           </div>
         );
@@ -115,9 +112,8 @@ const CalendarHeader = ({
 
       return (
         <div className="flex flex-nowrap text-nowrap">
-          <h2 className="text-sm">{weekStart.format("MMMM")}</h2>
-          <h2 className="text-sm text-gray-400">
-            , {weekStart.format("YYYY")}
+          <h2 className="text-sm">
+            {weekStart.format("MMMM")}, {weekStart.format("YYYY")}
           </h2>
         </div>
       );
@@ -125,9 +121,8 @@ const CalendarHeader = ({
 
     return (
       <div className="flex flex-nowrap text-nowrap">
-        <h2 className="text-sm">{selectedDate.format("MMMM")}</h2>
-        <h2 className="text-sm text-gray-400">
-          , {selectedDate.format("YYYY")}
+        <h2 className="text-sm">
+          {selectedDate.format("MMMM")}, {selectedDate.format("YYYY")}
         </h2>
       </div>
     );
@@ -136,15 +131,13 @@ const CalendarHeader = ({
   return (
     <header className="px-2 py-2 flex justify-between items-center border-gray-200 border-b ">
       <div className="flex">
-        {!showSidebar && (
-          <button
-            onClick={onOpenSidebar}
-            className="shrink-0 shadow-custom transition-all max-[768px]:w-10 active:bg-gray-50 cursor-pointer border-gray-200 rounded-full flex gap-1 items-center justify-center mr-2 border h-10 px-2 md:px-4"
-          >
-            <img src={menuIcon} className="w-4" />
-            <span className="ml-1 text-sm hidden md:inline">Menu</span>
-          </button>
-        )}
+        <button
+          onClick={onOpenSidebar}
+          className="shrink-0 shadow-custom transition-all max-[768px]:w-10 active:bg-gray-50 cursor-pointer border-gray-200 rounded-full flex gap-1 items-center justify-center mr-2 border h-10 px-2 md:px-4"
+        >
+          <img src={menuIcon} className="w-4" />
+          <span className="ml-1 text-sm hidden md:inline">Menu</span>
+        </button>
         <button
           onClick={handleToday}
           className="shrink-0 transition-all shadow-custom text-sm cursor-pointer border-1 border-gray-200 rounded-full mr-2 active:bg-gray-50 h-10 max-[768px]:w-10 w-20 px-2"
@@ -268,15 +261,13 @@ const CalendarHeader = ({
             )}
           </div>
         </div>
-        {!showChat && (
-          <button
-            onClick={onOpenAIChat}
-            className="shadow-custom shrink-0 active:bg-gray-700 cursor-pointer text-white bg-black rounded-full flex gap-1 items-center transition-all justify-center max-[768px]:w-10 h-10 px-2 md:px-4"
-          >
-            <img src={chatIcon} className="w-4 h-4 md:mr-1 invert" alt="Chat" />
-            <span className="text-sm hidden md:inline">Assistant</span>
-          </button>
-        )}
+        <button
+          onClick={onOpenAIChat}
+          className="shadow-custom shrink-0 active:bg-gray-700 cursor-pointer text-white bg-black rounded-full flex gap-1 items-center transition-all justify-center max-[768px]:w-10 h-10 px-2 md:px-4"
+        >
+          <img src={chatIcon} className="w-4 h-4 md:mr-1" alt="Chat" />
+          <span className="text-sm hidden md:inline">Assistant</span>
+        </button>
       </div>
     </header>
   );

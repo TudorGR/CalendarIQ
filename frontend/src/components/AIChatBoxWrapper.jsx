@@ -47,16 +47,16 @@ const AIChatBoxWrapper = ({ showAIChatBox, onClose }) => {
   if (!renderAIChatBox) return null;
 
   return (
-    <div className="fixed inset-0 z-50 md:relative md:inset-auto md:z-auto">
+    <div className="fixed inset-0 z-50 lg:relative lg:inset-auto lg:z-auto">
       <div
-        className={`absolute inset-0 bg-black/10 bg-opacity-40 transition-opacity duration-300 ease-in-out md:hidden ${
+        className={`absolute inset-0 bg-black/10 bg-opacity-40 transition-opacity duration-300 ease-in-out lg:hidden ${
           closing ? "opacity-0" : "opacity-100"
         }`}
         onClick={onClose}
       />
 
       <div
-        className={`absolute h-full inset-y-0 right-0 w-80 transform transition-transform duration-300 ease-in-out md:relative md:inset-auto ${
+        className={`absolute h-full inset-y-0 right-0 w-80 transform transition-transform duration-300 ease-in-out lg:relative lg:inset-auto ${
           closing ? "translate-x-full" : "translate-x-0"
         }`}
       >

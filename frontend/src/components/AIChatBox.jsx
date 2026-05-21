@@ -253,7 +253,7 @@ const AIChatBox = ({ onClose }) => {
 
     try {
       const savedMessages = localStorage.getItem(
-        `chat_messages_${currentUser.id}`
+        `chat_messages_${currentUser.id}`,
       );
       if (savedMessages) {
         return JSON.parse(savedMessages);
@@ -284,7 +284,7 @@ const AIChatBox = ({ onClose }) => {
     if (currentUser?.id && messages.length > 0) {
       localStorage.setItem(
         `chat_messages_${currentUser.id}`,
-        JSON.stringify(messages)
+        JSON.stringify(messages),
       );
     }
   }, [messages, currentUser?.id]);
@@ -306,7 +306,7 @@ const AIChatBox = ({ onClose }) => {
   const isMobileDevice = () => {
     return (
       /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-        navigator.userAgent
+        navigator.userAgent,
       ) || window.innerWidth <= 768
     );
   };
@@ -427,7 +427,7 @@ const AIChatBox = ({ onClose }) => {
     if (currentUser?.id) {
       localStorage.setItem(
         `chat_messages_${currentUser.id}`,
-        JSON.stringify([initialMessage])
+        JSON.stringify([initialMessage]),
       );
 
       // Reset the AI's memory on the server
@@ -454,14 +454,15 @@ const AIChatBox = ({ onClose }) => {
       // Get past 3 months events
       const threeMonthsAgo = dayjs().subtract(3, "month").valueOf();
       const pastEvents = savedEvents.filter(
-        (event) => event.day >= threeMonthsAgo && event.day <= dayjs().valueOf()
+        (event) =>
+          event.day >= threeMonthsAgo && event.day <= dayjs().valueOf(),
       );
 
       // Get next 3 months events
       const threeMonthsAhead = dayjs().add(3, "month").valueOf();
       const futureEvents = savedEvents.filter(
         (event) =>
-          event.day >= dayjs().valueOf() && event.day <= threeMonthsAhead
+          event.day >= dayjs().valueOf() && event.day <= threeMonthsAhead,
       );
 
       // Call smart suggestions endpoint
@@ -471,7 +472,7 @@ const AIChatBox = ({ onClose }) => {
           pastEvents,
           futureEvents,
           currentDate,
-        }
+        },
       );
 
       // Transform suggestions into the format needed by the component
@@ -580,7 +581,7 @@ const AIChatBox = ({ onClose }) => {
 
       // Remove this suggestion to avoid duplicates
       setSuggestions((prev) =>
-        prev.filter((s) => s.formattedMessage !== suggestion.formattedMessage)
+        prev.filter((s) => s.formattedMessage !== suggestion.formattedMessage),
       );
     }, 0);
   };
@@ -679,7 +680,7 @@ const AIChatBox = ({ onClose }) => {
                 message:
                   response.data.message ||
                   `Event created: ${event.title} on ${dayjs(event.day).format(
-                    "dddd, MMMM D"
+                    "dddd, MMMM D",
                   )} at ${event.timeStart}.`,
               },
               isTyping: true,
@@ -917,7 +918,7 @@ const AIChatBox = ({ onClose }) => {
           {
             type: "system",
             text: `Event created: ${event.title} on ${dayjs(event.day).format(
-              "dddd, MMMM D"
+              "dddd, MMMM D",
             )} at ${event.timeStart}.`,
             isTyping: true,
             isComplete: false,
@@ -1514,7 +1515,7 @@ const AIChatBox = ({ onClose }) => {
                 e.target.style.height = "auto";
                 e.target.style.height = `${Math.min(
                   e.target.scrollHeight,
-                  130
+                  130,
                 )}px`;
               }}
               onKeyDown={(e) => {

@@ -72,7 +72,7 @@ const CalendarApp = () => {
         <div className="h-[calc(100vh-65px)] overflow-clip flex border-1 border-gray-200 bg-white rounded-3xl">
           {/* Show regular sidebar on medium screens and up */}
           {showSidebar && (
-            <div className="hidden md:block">
+            <div className="hidden lg:block">
               <Sidebar onClose={() => setShowSidebar(false)} />
             </div>
           )}

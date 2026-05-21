@@ -34,7 +34,7 @@ const SidebarWrapper = ({ showSidebar, onClose }) => {
   if (!renderSidebar) return null;
 
   return (
-    <div className="md:hidden fixed inset-0 z-50">
+    <div className="lg:hidden fixed inset-0 z-50">
       <div
         className={`absolute inset-0 bg-black/10 bg-opacity-40 transition-opacity duration-300 ease-in-out ${
           closing ? "opacity-0" : "opacity-100"
