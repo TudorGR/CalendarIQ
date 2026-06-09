@@ -23,3 +23,13 @@ dist-ssr
 *.sln
 *.sw?
 .env
+
+PLAN.md
+
+# Ignore local runtime settings containing secrets
+**/appsettings.json
+**/appsettings.Development.json
+
+# If you use Visual Studio, ignore user-specific settings
+.vs/
+_ReSharper.Caches/
