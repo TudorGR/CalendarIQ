@@ -57,12 +57,17 @@ const DayWeek = ({
     const minutes = now.hour() * 60 + now.minute();
     return (minutes / 60) * TIME_SLOT_HEIGHT;
   };
-  const getTimeFromMousePosition = (mouseY, gridElement) => {
+  const getTimeFromMousePosition = (
+    mouseY,
+    gridElement,
+    snapMode = "round"
+  ) => {
     const rect = gridElement.getBoundingClientRect();
     const relativeY = mouseY - rect.top;
     const minutes = (relativeY / TIME_SLOT_HEIGHT) * 60;
     const hours = Math.floor(minutes / 60);
-    const mins = Math.round((minutes % 60) / 15) * 15; // Snap to 15-minute intervals
+    const snap = snapMode === "floor" ? Math.floor : Math.round;
+    const mins = snap((minutes % 60) / 15) * 15; // Snap to 15-minute intervals
 
     // Ensure minutes stay within valid bounds (0-59)
     if (mins === 60) {
@@ -74,13 +79,42 @@ const DayWeek = ({
       .padStart(2, "0")}`;
   };
 
+  const getMinutesFromTime = (time) => {
+    const [hours, minutes] = time.split(":").map(Number);
+    return hours * 60 + minutes;
+  };
+
+  const formatTimeFromMinutes = (totalMinutes) => {
+    const boundedMinutes = Math.min(Math.max(totalMinutes, 0), 24 * 60);
+    const hours = Math.floor(boundedMinutes / 60);
+    const minutes = boundedMinutes % 60;
+    return `${hours.toString().padStart(2, "0")}:${minutes
+      .toString()
+      .padStart(2, "0")}`;
+  };
+
+  const getDragRange = (startTime, currentTime) => {
+    const startMinutes = getMinutesFromTime(startTime);
+    const currentMinutes = getMinutesFromTime(currentTime);
+    const clickedSlotEnd = formatTimeFromMinutes(startMinutes + 15);
+
+    if (currentMinutes < startMinutes) {
+      return [currentTime, clickedSlotEnd];
+    }
+
+    return [
+      startTime,
+      formatTimeFromMinutes(Math.max(currentMinutes, startMinutes + 15)),
+    ];
+  };
+
   const handleMouseDown = (e) => {
     if (e.target.closest(".event")) {
       return;
     }
     const gridElement = e.currentTarget;
     setIsDragging(true);
-    const startTime = getTimeFromMousePosition(e.clientY, gridElement);
+    const startTime = getTimeFromMousePosition(e.clientY, gridElement, "floor");
     setDragStart(startTime);
     setDragEnd(startTime);
   };
@@ -88,7 +122,11 @@ const DayWeek = ({
   const handleMouseMove = (e) => {
     if (isDragging) {
       const gridElement = e.currentTarget;
-      const currentTime = getTimeFromMousePosition(e.clientY, gridElement);
+      const currentTime = getTimeFromMousePosition(
+        e.clientY,
+        gridElement,
+        "floor"
+      );
       setDragEnd(currentTime);
     } else if (isDraggingAcrossDays && draggedEvent) {
       const gridElement = e.currentTarget;
@@ -116,7 +154,7 @@ const DayWeek = ({
     if (isDragging) {
       setIsDragging(false);
       setSelectedDay(day);
-      const [startTime, endTime] = [dragStart, dragEnd].sort();
+      const [startTime, endTime] = getDragRange(dragStart, dragEnd);
       setTimeStart(startTime);
       setTimeEnd(endTime);
       setSelectedEvent(null);
@@ -372,7 +410,7 @@ const DayWeek = ({
             <div
               className="z-2 border-1 border-gray-500 min-h-3 opacity-50 absolute left-0 w-full  bg-gray-200"
               style={{
-                ...positionEvent(dragStart, dragEnd),
+                ...positionEvent(...getDragRange(dragStart, dragEnd)),
                 pointerEvents: "none",
               }}
             />

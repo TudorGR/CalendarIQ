@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using CalendarIQ.Api.Data;
+using CalendarIQ.Api.DTOs;
 using CalendarIQ.Api.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,10 +12,12 @@ namespace CalendarIQ.Api.Controllers;
 public class EventsController : ControllerBase
 {
     private readonly AppDbContext _db;
+    private readonly IEventValidator _eventValidator;
 
-    public EventsController(AppDbContext db)
+    public EventsController(AppDbContext db, IEventValidator eventValidator)
     {
         _db = db;
+        _eventValidator = eventValidator;
     }
 
     private int? GetCurrentUserId()
@@ -48,22 +51,33 @@ public class EventsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateEvent([FromBody] Event newEvent)
+    public async Task<IActionResult> CreateEvent([FromBody] CreateEventRequest request)
     {
         var userId = GetCurrentUserId();
         if (userId == null) return Unauthorized(new { message = "Invalid or missing token" });
 
-        //validation to be added as per the backend specifications
+        var errors = _eventValidator.Validate(request);
+        if (errors.Count > 0)
+            return BadRequest(new { errors });
 
-        newEvent.UserId = userId.Value;
+        var newEvent = new Event
+        {
+            Title = request.Title!.Trim(),
+            Day = request.Day!.Value,
+            TimeStart = request.TimeStart!,
+            TimeEnd = request.TimeEnd!,
+            Category = request.Category ?? "Other",
+            UserId = userId.Value
+        };
 
         _db.Events.Add(newEvent);
         await _db.SaveChangesAsync();
+
         return StatusCode(201, newEvent);
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateEvent(int id, [FromBody] Event updatedData)
+    public async Task<IActionResult> UpdateEvent(int id, [FromBody] CreateEventRequest request)
     {
         var userId = GetCurrentUserId();
         if (userId == null) return Unauthorized(new { message = "Invalid or missing token" });
@@ -74,11 +88,15 @@ public class EventsController : ControllerBase
         if (existingEvent.UserId != userId.Value)
             return Forbid();
 
-        existingEvent.Title = updatedData.Title;
-        existingEvent.Day = updatedData.Day;
-        existingEvent.TimeStart = updatedData.TimeStart;
-        existingEvent.TimeEnd = updatedData.TimeEnd;
-        existingEvent.Category = updatedData.Category;
+        var errors = _eventValidator.Validate(request);
+        if (errors.Count > 0)
+            return BadRequest(new { errors });
+
+        existingEvent.Title = request.Title!.Trim();
+        existingEvent.Day = request.Day!.Value;
+        existingEvent.TimeStart = request.TimeStart!;
+        existingEvent.TimeEnd = request.TimeEnd!;
+        existingEvent.Category = request.Category ?? "Other";
 
         await _db.SaveChangesAsync();
         return Ok(existingEvent);

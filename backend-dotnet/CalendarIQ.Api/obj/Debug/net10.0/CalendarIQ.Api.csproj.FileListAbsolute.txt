@@ -131,3 +131,4 @@
 /Users/tudorgradinaru/Documents/github/CalendarIQ/backend-dotnet/CalendarIQ.Api/obj/Debug/net10.0/CalendarIQ.Api.genruntimeconfig.cache
 /Users/tudorgradinaru/Documents/github/CalendarIQ/backend-dotnet/CalendarIQ.Api/obj/Debug/net10.0/ref/CalendarIQ.Api.dll
 /Users/tudorgradinaru/Documents/github/CalendarIQ/backend-dotnet/CalendarIQ.Api/bin/Debug/net10.0/Scalar.AspNetCore.dll
+/Users/tudorgradinaru/Documents/github/CalendarIQ/backend-dotnet/CalendarIQ.Api/bin/Debug/net10.0/appsettings.Example.json

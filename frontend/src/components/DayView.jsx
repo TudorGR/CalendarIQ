@@ -114,12 +114,17 @@ const DayView = () => {
     };
   }, []);
 
-  const getTimeFromMousePosition = (mouseY, gridElement) => {
+  const getTimeFromMousePosition = (
+    mouseY,
+    gridElement,
+    snapMode = "round"
+  ) => {
     const rect = gridElement.getBoundingClientRect();
     const relativeY = mouseY - rect.top;
     const minutes = (relativeY / TIME_SLOT_HEIGHT) * 60;
     const hours = Math.floor(minutes / 60);
-    const mins = Math.round((minutes % 60) / 15) * 15;
+    const snap = snapMode === "floor" ? Math.floor : Math.round;
+    const mins = snap((minutes % 60) / 15) * 15;
 
     if (mins === 60) {
       return `${(hours + 1).toString().padStart(2, "0")}:00`;
@@ -131,6 +136,35 @@ const DayView = () => {
       .padStart(2, "0")}`;
   };
 
+  const getMinutesFromTime = (time) => {
+    const [hours, minutes] = time.split(":").map(Number);
+    return hours * 60 + minutes;
+  };
+
+  const formatTimeFromMinutes = (totalMinutes) => {
+    const boundedMinutes = Math.min(Math.max(totalMinutes, 0), 24 * 60);
+    const hours = Math.floor(boundedMinutes / 60);
+    const minutes = boundedMinutes % 60;
+    return `${hours.toString().padStart(2, "0")}:${minutes
+      .toString()
+      .padStart(2, "0")}`;
+  };
+
+  const getDragRange = (startTime, currentTime) => {
+    const startMinutes = getMinutesFromTime(startTime);
+    const currentMinutes = getMinutesFromTime(currentTime);
+    const clickedSlotEnd = formatTimeFromMinutes(startMinutes + 15);
+
+    if (currentMinutes < startMinutes) {
+      return [currentTime, clickedSlotEnd];
+    }
+
+    return [
+      startTime,
+      formatTimeFromMinutes(Math.max(currentMinutes, startMinutes + 15)),
+    ];
+  };
+
   const handleMouseDown = (e) => {
     if (e.target.closest(".eventt")) {
       return;
@@ -138,7 +172,7 @@ const DayView = () => {
     e.preventDefault();
     const gridElement = e.currentTarget;
     setIsDragging(true);
-    const startTime = getTimeFromMousePosition(e.clientY, gridElement);
+    const startTime = getTimeFromMousePosition(e.clientY, gridElement, "floor");
     setDragStart(startTime);
     setDragEnd(startTime);
   };
@@ -147,7 +181,11 @@ const DayView = () => {
     if (isDragging) {
       e.preventDefault();
       const gridElement = e.currentTarget;
-      const currentTime = getTimeFromMousePosition(e.clientY, gridElement);
+      const currentTime = getTimeFromMousePosition(
+        e.clientY,
+        gridElement,
+        "floor"
+      );
       setDragEnd(currentTime);
     } else if (isDraggingEvent && draggedEvent) {
       e.preventDefault();
@@ -217,24 +255,7 @@ const DayView = () => {
       e.preventDefault();
       setIsDragging(false);
 
-      const getMinutes = (timeStr) => {
-        const [hours, minutes] = timeStr.split(":").map(Number);
-        return hours * 60 + minutes;
-      };
-
-      let [startTime, endTime] = [dragStart, dragEnd].sort();
-
-      const duration = getMinutes(endTime) - getMinutes(startTime);
-
-      if (duration < 15) {
-        const [hours, minutes] = startTime.split(":").map(Number);
-        const totalMinutes = hours * 60 + minutes + 15;
-        const newHours = Math.floor(totalMinutes / 60);
-        const newMinutes = totalMinutes % 60;
-        endTime = `${newHours.toString().padStart(2, "0")}:${newMinutes
-          .toString()
-          .padStart(2, "0")}`;
-      }
+      const [startTime, endTime] = getDragRange(dragStart, dragEnd);
 
       setTimeStart(startTime);
       setTimeEnd(endTime);
@@ -365,7 +386,7 @@ const DayView = () => {
             {isDragging && dragStart && dragEnd && (
               <div
                 className="eventt border-1 border-gray-500 min-h-3 opacity-50 absolute left-0 w-full  bg-gray-200"
-                style={positionEvent(dragStart, dragEnd)}
+                style={positionEvent(...getDragRange(dragStart, dragEnd))}
               />
             )}
 
