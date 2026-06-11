@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CalendarIQ.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bd434e6d2a3e6a20bc9285eab972507dea732243")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+73db74b2d5ded2e0d1dfe5feb268b3df5829d17f")]
 [assembly: System.Reflection.AssemblyProductAttribute("CalendarIQ.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CalendarIQ.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

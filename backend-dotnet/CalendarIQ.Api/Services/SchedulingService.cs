@@ -55,15 +55,15 @@ public class SchedulingService : ISchedulingService
         return freeRanges.Where(r => r.DurationMinutes >= 30).ToList();
     }
 
-    public async Task<CategoryPatterns?> GetCategoryPatternsAsync(string category, int userId, AppDbContext dbContext)
+    public async Task<CategoryPatterns?> GetCategoryPatternsAsync(string category, int userId)
     {
         try
         {
-            var today = DateTimeOffset.Now;
+            var today = DateTimeOffset.UtcNow;
             var threeMonthsAgoMs = today.AddMonths(-3).ToUnixTimeMilliseconds();
             var todayMs = today.ToUnixTimeMilliseconds();
 
-            var pastEvents = await dbContext.Events
+            var pastEvents = await _context.Events
             .Where(e => e.Category == category &&
                         e.UserId == userId &&
                         e.Day >= threeMonthsAgoMs &&
@@ -122,5 +122,77 @@ public class SchedulingService : ISchedulingService
             Console.WriteLine($"Error getting category patterns: {ex.Message}");
             return null;
         }
+    }
+
+    public List<RankedSlot> RankSlotsByPattern(List<FreeSlot> freeSlots, string category, int dayOfWeek, int duration, CategoryPatterns? patterns)
+    {
+        if (patterns == null)
+        {
+            return freeSlots
+                .Where(slot => slot.DurationMinutes >= duration)
+                .Select(slot =>
+                {
+                    int startMins = _timeService.GetTimeInMinutes(slot.TimeStart);
+                    return new RankedSlot
+                    {
+                        TimeStart = slot.TimeStart,
+                        TimeEnd = _timeService.MinutesToTimeString(startMins + duration),
+                        Score = 1,
+                        DurationMinutes = duration
+                    };
+                })
+                .OrderBy(slot => _timeService.GetTimeInMinutes(slot.TimeStart))
+                .ToList();
+        }
+
+        var scoredSlots = new List<RankedSlot>();
+
+        var filteredSlots = freeSlots.Where(slot => slot.DurationMinutes >= duration);
+
+        foreach (var slot in filteredSlots)
+        {
+            int startMinutes = _timeService.GetTimeInMinutes(slot.TimeStart);
+            int endMinutes = _timeService.GetTimeInMinutes(slot.TimeEnd);
+
+            for (int min = startMinutes; min <= endMinutes - duration; min += 30)
+            {
+                string timeStart = _timeService.MinutesToTimeString(min);
+                string timeEnd = _timeService.MinutesToTimeString(min + duration);
+
+                int startHour = (int)Math.Floor((double)min / 60);
+                int endHour = (int)Math.Ceiling((double)(min + duration) / 60);
+
+                int daySpecificScore = 0;
+                int generalScore = 0;
+
+                for (int h = startHour; h < endHour; h++)
+                {
+                    if (h < 24)
+                    {
+                        int daySpecificValue = 0;
+                        if (patterns.FrequencyByDayOfWeek.ContainsKey(dayOfWeek) &&
+                            patterns.FrequencyByDayOfWeek[dayOfWeek].Length > h)
+                        {
+                            daySpecificValue = patterns.FrequencyByDayOfWeek[dayOfWeek][h];
+                        }
+
+                        int generalValue = patterns.FrequencyByHour.Length > h ? patterns.FrequencyByHour[h] : 0;
+
+                        daySpecificScore += daySpecificValue * 3;
+                        generalScore += generalValue;
+                    }
+                }
+                int finalScore = daySpecificScore + generalScore;
+
+                scoredSlots.Add(new RankedSlot
+                {
+                    TimeStart = timeStart,
+                    TimeEnd = timeEnd,
+                    Score = finalScore > 0 ? finalScore : 1,
+                    DurationMinutes = duration
+                });
+            }
+        }
+        return scoredSlots.OrderByDescending(s => s.Score).ToList();
     }
 }
