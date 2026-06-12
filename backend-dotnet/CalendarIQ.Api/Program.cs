@@ -1,7 +1,6 @@
 using CalendarIQ.Api.Data;
 using CalendarIQ.Api.Options;
 using CalendarIQ.Api.Services;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
@@ -16,7 +15,7 @@ builder.Services.Configure<AiOptions>(builder.Configuration.GetSection(AiOptions
 builder.Services.AddHttpClient<GroqClient>();
 builder.Services.AddHttpClient<GeminiClient>();
 builder.Services.AddTransient<LocalEvents>();
-builder.Services.AddHttpClient<WeatherService>();
+builder.Services.AddHttpClient<TravelService>();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
@@ -31,26 +30,6 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
-
-app.MapGet("/weather", async (
-    double? latitude,
-    double? longitude,
-    WeatherService weatherService) =>
-{
-    if (latitude is null || longitude is null)
-        return Results.BadRequest(new { error = "Latitude and longitude are required" });
-
-    try
-    {
-        var data = await weatherService.GetWeatherForecastAsync(latitude.Value, longitude.Value);
-        return Results.Content(data, "application/json");
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Error fetching weather data: {ex}");
-        return Results.Problem("Failed to fetch weather data");
-    }
-});
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

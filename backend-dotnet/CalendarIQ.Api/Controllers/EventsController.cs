@@ -67,7 +67,12 @@ public class EventsController : ControllerBase
             TimeStart = request.TimeStart!,
             TimeEnd = request.TimeEnd!,
             Category = request.Category ?? "Other",
-            UserId = userId.Value
+            UserId = userId.Value,
+            Location = request.Location,
+            Description = request.Description,
+            Locked = request.Locked ?? false,
+            ReminderEnabled = request.ReminderEnabled ?? false,
+            ReminderTime = request.ReminderTime ?? 15
         };
 
         _db.Events.Add(newEvent);
@@ -97,6 +102,11 @@ public class EventsController : ControllerBase
         existingEvent.TimeStart = request.TimeStart!;
         existingEvent.TimeEnd = request.TimeEnd!;
         existingEvent.Category = request.Category ?? "Other";
+        existingEvent.Location = request.Location;
+        existingEvent.Description = request.Description;
+        existingEvent.Locked = request.Locked ?? false;
+        existingEvent.ReminderEnabled = request.ReminderEnabled ?? false;
+        existingEvent.ReminderTime = request.ReminderTime ?? 15;
 
         await _db.SaveChangesAsync();
         return Ok(existingEvent);
