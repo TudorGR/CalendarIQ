@@ -62,7 +62,7 @@ The backend was rewritten from Node.js to C# to achieve higher type safety, main
 
 1. Clone the repository and navigate to the backend directory:
 ```bash
-cd backend-dotnet
+cd backend/CalendarIQ.Api
 
 ```
 
