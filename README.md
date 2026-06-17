@@ -21,6 +21,11 @@ CalendarIQ resolves these issues by embedding an asynchronous AI orchestration l
 * **Voice Command Interface**
 * **Automated Conflict Resolution**
 
+#### AI Performance
+
+* Achieved **84% intent classification accuracy** on the evaluation test set.
+* Improved performance through iterative prompt engineering, validation workflows, and testing against real user prompts.
+
 ### Calendar & Event Management
 
 * **Multi-View Interface**
