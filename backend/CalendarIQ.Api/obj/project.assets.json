@@ -2585,19 +2585,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\tudor\\.nuget\\packages\\": {}
+    "/Users/tudorgradinaru/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\tudor\\Documents\\CalendarIQ\\backend\\CalendarIQ.Api\\CalendarIQ.Api.csproj",
+      "projectUniqueName": "/Users/tudorgradinaru/Documents/github/CalendarIQ/backend/CalendarIQ.Api/CalendarIQ.Api.csproj",
       "projectName": "CalendarIQ.Api",
-      "projectPath": "C:\\Users\\tudor\\Documents\\CalendarIQ\\backend\\CalendarIQ.Api\\CalendarIQ.Api.csproj",
-      "packagesPath": "C:\\Users\\tudor\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\tudor\\Documents\\CalendarIQ\\backend\\CalendarIQ.Api\\obj\\",
+      "projectPath": "/Users/tudorgradinaru/Documents/github/CalendarIQ/backend/CalendarIQ.Api/CalendarIQ.Api.csproj",
+      "packagesPath": "/Users/tudorgradinaru/.nuget/packages/",
+      "outputPath": "/Users/tudorgradinaru/Documents/github/CalendarIQ/backend/CalendarIQ.Api/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\tudor\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "/Users/tudorgradinaru/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net10.0"
@@ -2675,7 +2675,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.301/PortableRuntimeIdentifierGraph.json",
+        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/10.0.300/PortableRuntimeIdentifierGraph.json",
         "packagesToPrune": {
           "Microsoft.AspNetCore": "(,10.0.32767]",
           "Microsoft.AspNetCore.Antiforgery": "(,10.0.32767]",
